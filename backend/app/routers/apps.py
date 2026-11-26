@@ -1,7 +1,7 @@
 from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from app.db import db, rows_to_list
+from app.db import db, rows_to_list, write_tx
 from app.services.common import audit, now_str, set_app_env_version
 
 router = APIRouter(tags=["应用"])
@@ -27,7 +27,7 @@ def list_apps():
 def create_app(body: AppIn):
     if body.状态 not in ("启用", "停用"):
         raise HTTPException(400, "状态仅允许启用或停用")
-    with db() as conn:
+    with write_tx() as conn:
         try:
             cur = conn.execute(
                 "INSERT INTO apps(name, owner, status) VALUES (?, ?, ?)",
@@ -44,7 +44,7 @@ def create_app(body: AppIn):
 
 @router.patch("/应用/{app_id}")
 def patch_app(app_id: int, body: AppIn):
-    with db() as conn:
+    with write_tx() as conn:
         row = conn.execute("SELECT id FROM apps WHERE id=?", (app_id,)).fetchone()
         if not row:
             raise HTTPException(404, "应用不存在")

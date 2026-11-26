@@ -1,7 +1,7 @@
 from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.db import db, row_to_dict
+from app.db import row_to_dict, write_tx
 from app.services.common import (
     active_release_window,
     audit,
@@ -24,7 +24,7 @@ class PromoteIn(BaseModel):
 
 @router.post("/发版单/{release_id}/晋升")
 def promote(release_id: int, body: PromoteIn):
-    with db() as conn:
+    with write_tx() as conn:
         r = conn.execute("SELECT * FROM releases WHERE id=?", (release_id,)).fetchone()
         if not r:
             raise HTTPException(404, "发版单不存在")

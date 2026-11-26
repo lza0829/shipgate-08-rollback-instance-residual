@@ -1,7 +1,7 @@
 from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.db import db, rows_to_list
+from app.db import db, rows_to_list, write_tx
 from app.services.common import audit, now_str
 
 router = APIRouter(tags=["设置"])
@@ -24,7 +24,7 @@ def list_settings():
 def upsert_setting(body: SettingIn):
     if not body.键:
         raise HTTPException(400, "键不能为空")
-    with db() as conn:
+    with write_tx() as conn:
         conn.execute(
             """
             INSERT INTO settings(key, value) VALUES (?, ?)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.db import db, rows_to_list
+from app.db import db, rows_to_list, write_tx
 from app.services.common import audit, env_by_code, now_str
 
 router = APIRouter(tags=["窗口"])
@@ -46,7 +46,7 @@ def list_rollback_windows():
 def toggle_release(body: WindowToggle):
     if body.状态 not in ("窗开", "窗关"):
         raise HTTPException(400, "状态仅允许窗开或窗关")
-    with db() as conn:
+    with write_tx() as conn:
         env = env_by_code(conn, body.环境)
         row = conn.execute(
             "SELECT id FROM release_windows WHERE env_id=? ORDER BY id DESC LIMIT 1",
@@ -63,7 +63,7 @@ def toggle_release(body: WindowToggle):
 def toggle_rollback(body: WindowToggle):
     if body.状态 not in ("窗开", "窗关"):
         raise HTTPException(400, "状态仅允许窗开或窗关")
-    with db() as conn:
+    with write_tx() as conn:
         env = env_by_code(conn, body.环境)
         row = conn.execute(
             "SELECT id FROM rollback_windows WHERE env_id=? ORDER BY id DESC LIMIT 1",

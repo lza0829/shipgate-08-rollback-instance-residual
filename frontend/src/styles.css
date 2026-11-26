@@ -207,6 +207,18 @@ button.danger {
 }
 .muted { color: var(--muted); font-size: 0.9rem; }
 .err { color: var(--danger); white-space: pre-wrap; }
+.ok { color: var(--ok); white-space: pre-wrap; }
+
+/* 回退残留：全局一套视觉语义，残留行统一描边，收敛成功统一绿色 */
+.row-residual td { background: rgba(192, 57, 43, 0.09); }
+.row-residual:hover td { background: rgba(192, 57, 43, 0.15); }
+.row-done td { background: rgba(42, 143, 110, 0.08); }
+.stat-ok { border-bottom-color: var(--ok); }
+.stat-warn { border-bottom-color: #d08a1d; }
+.stat-danger { border-bottom-color: var(--danger); }
+.stat-ok .n { color: var(--ok); }
+.stat-warn .n { color: #b0741a; }
+.stat-danger .n { color: var(--danger); }
 
 .table-wrap { overflow: auto; }
 table {

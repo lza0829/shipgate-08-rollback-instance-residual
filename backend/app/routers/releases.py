@@ -1,7 +1,7 @@
 from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from app.db import db, rows_to_list, row_to_dict
+from app.db import db, rows_to_list, row_to_dict, write_tx
 from app.services.common import (
     RELEASE_SELECT,
     assert_app_enabled,
@@ -41,7 +41,7 @@ def one_release(release_id: int):
 
 @router.post("/发版单")
 def create_release(body: ReleaseIn):
-    with db() as conn:
+    with write_tx() as conn:
         assert_app_enabled(conn, body.应用编号)
         ratio = body.金丝雀比例
         if ratio is None:
@@ -66,7 +66,7 @@ def create_release(body: ReleaseIn):
 
 @router.post("/发版单/{release_id}/入闸")
 def admit(release_id: int):
-    with db() as conn:
+    with write_tx() as conn:
         r = conn.execute("SELECT * FROM releases WHERE id=?", (release_id,)).fetchone()
         if not r:
             raise HTTPException(404, "发版单不存在")
@@ -103,7 +103,7 @@ def admit(release_id: int):
 def set_pipeline(release_id: int, body: PipelineIn):
     if body.流水线 not in ("未回执", "绿", "红"):
         raise HTTPException(400, "流水线状态非法")
-    with db() as conn:
+    with write_tx() as conn:
         r = conn.execute("SELECT * FROM releases WHERE id=?", (release_id,)).fetchone()
         if not r:
             raise HTTPException(404, "发版单不存在")
